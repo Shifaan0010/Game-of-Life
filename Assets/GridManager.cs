@@ -148,6 +148,11 @@ public class GridManager : MonoBehaviour
         return grid[row][col].GetComponent<StateManager>().isAlive;
     }
 
+    private void setState(int row, int col, bool state)
+    {
+        grid[row][col].GetComponent<StateManager>().isAlive = state;
+    }
+
     void nextState()
     {
         if (grid.Count == 0)
@@ -158,11 +163,18 @@ public class GridManager : MonoBehaviour
         lock (grid)
         {
             int currentRows = grid.Count, currentCols = grid[0].Count;
-            
-            bool[,] nextGridState = new bool[currentRows, currentCols];
+
+            bool[] prevRow = new bool[currentCols];
+            bool[] currentRow = new bool[currentCols];
 
             for (int row = 0; row < currentRows; row += 1)
             {
+                (prevRow, currentRow) = (currentRow, prevRow);
+                for (int col = 0; col < currentCols; col += 1)
+                {
+                    currentRow[col] = isAlive(row, col);
+                }
+
                 for (int col = 0; col < currentCols; col += 1)
                 {
                     int aliveNeighborCount = 0;
@@ -174,55 +186,24 @@ public class GridManager : MonoBehaviour
                     {
                         try
                         {
-                            if (isAlive(neighborRow, neighborCol))
+                            if ((neighborRow == row - 1 && prevRow[neighborCol]) || (neighborRow == row && currentRow[neighborCol]) || (neighborRow == row + 1 && isAlive(neighborRow, neighborCol)))
                             {
                                 aliveNeighborCount += 1;
                             }
                         }
-                        catch (ArgumentOutOfRangeException e)
-                        {
-
-                        }
+                        catch (ArgumentOutOfRangeException) { }
+                        catch (IndexOutOfRangeException) { }
                     }
 
                     if (aliveNeighborCount < 2 || aliveNeighborCount > 3)
                     {
-                        nextGridState[row, col] = false;
+                        setState(row, col, false);
                     }
                     else if (aliveNeighborCount == 3)
                     {
-                        nextGridState[row, col] = true;
-                    }
-                    else
-                    {
-                        nextGridState[row, col] = isAlive(row, col);
+                        setState(row, col, true);
                     }
                 }
-            }
-
-            string matrixStr = "";
-            for (int i = 0; i < currentRows; i++)
-            {
-                for (int j = 0; j < currentCols; j++)
-                {
-                    matrixStr += string.Format("{0} ", nextGridState[i, j] ? 1 : 0);
-                }
-                matrixStr += Environment.NewLine + Environment.NewLine;
-            }
-            //Debug.Log(matrixStr);
-
-            setGridState(nextGridState);
-        }
-    }
-
-    private void setGridState(bool[,] state)
-    {
-        for (int row = 0; row < state.GetLength(0); row += 1)
-        {
-            for (int col = 0; col < state.GetLength(1); col += 1)
-            {
-                //Debug.Log($"{row} {col} {grid[row][col].GetComponent<StateManager>().isAlive}");
-                grid[row][col].GetComponent<StateManager>().isAlive = state[row, col];
             }
         }
     }
