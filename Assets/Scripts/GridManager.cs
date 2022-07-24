@@ -5,19 +5,19 @@ using UnityEngine;
 
 public class GridManager : MonoBehaviour
 {
-    public GameObject tile;
+    public GameObject cell;
 
     [Range(0.1f, 2)]
-    public float tileSize = 1;
+    public float cellSize = 1;
 
     [Range(0, 1)]
-    public float tileGap = 0.1f;
+    public float cellGap = 0.1f;
 
     public int rows
     {
         get
         {
-            return Mathf.CeilToInt(Camera.main.orthographicSize * 2 / (tileSize + tileGap)) + 1;
+            return Mathf.CeilToInt(Camera.main.orthographicSize * 2 / (cellSize + cellGap)) + 1;
         }
     }
 
@@ -25,7 +25,7 @@ public class GridManager : MonoBehaviour
     {
         get
         {
-            return Mathf.CeilToInt(Camera.main.orthographicSize * 2 * Camera.main.aspect / (tileSize + tileGap)) + 1;
+            return Mathf.CeilToInt(Camera.main.orthographicSize * 2 * Camera.main.aspect / (cellSize + cellGap)) + 1;
         }
     }
 
@@ -63,11 +63,14 @@ public class GridManager : MonoBehaviour
         }
     }
 
+    private GameOfLife simulator;
+
     // Start is called before the first frame update
     void Start()
     {
         grid = new List<List<GameObject>>();
-        resizeGrid(rows, cols);
+
+        simulator = GetComponent<GameOfLife>();
 
         playSpeed = 10;
 
@@ -82,7 +85,7 @@ public class GridManager : MonoBehaviour
 
     private Vector3 calcPosition(int row, int col)
     {
-        return new Vector3((col - cols / 2) * (tileSize + tileGap), (row - rows / 2) * (tileSize + tileGap), 0);
+        return new Vector3((col - cols / 2) * (cellSize + cellGap), (row - rows / 2) * (cellSize + cellGap), 0);
     }
 
     private void calcAllPositions()
@@ -92,7 +95,13 @@ public class GridManager : MonoBehaviour
             for (int col = 0; col < cols; col += 1)
             {
                 grid[row][col].transform.position = calcPosition(row, col);
-                grid[row][col].transform.localScale = Vector3.one * tileSize;
+                grid[row][col].transform.localScale = Vector3.one * cellSize;
+
+                grid[row][col].GetComponent<StateManager>().grid = simulator.grid;
+
+                // 
+                grid[row][col].GetComponent<StateManager>().row = row + 8;
+                grid[row][col].GetComponent<StateManager>().col = col + 8;
             }
         }
     }
@@ -126,7 +135,7 @@ public class GridManager : MonoBehaviour
                 {
                     if (grid[row].Count < newCols)
                     {
-                        grid[row].Add(Instantiate(tile));
+                        grid[row].Add(Instantiate(cell));
                     }
                     else
                     {
@@ -143,24 +152,11 @@ public class GridManager : MonoBehaviour
         }
     }
 
-    private bool isAlive(int row, int col)
-    {
-        return grid[row][col].GetComponent<StateManager>().isAlive;
-    }
-
-    private void setState(int row, int col, bool state)
-    {
-        grid[row][col].GetComponent<StateManager>().isAlive = state;
-    }
-
     void nextState()
     {
-        if (grid.Count == 0)
-        {
-            return;
-        }
+        simulator.nextGrid();
 
-        lock (grid)
+        /* lock (grid)
         {
             int currentRows = grid.Count, currentCols = grid[0].Count;
 
@@ -205,7 +201,7 @@ public class GridManager : MonoBehaviour
                     }
                 }
             }
-        }
+        } */
     }
 
     // Update is called once per frame
@@ -213,7 +209,7 @@ public class GridManager : MonoBehaviour
     {
         if (rows != grid.Count || (grid.Count > 0 && cols != grid[0].Count))
         {
-            Debug.Log($"Resize {rows} {cols}");
+            // Debug.Log($"Resize {rows} {cols}");
             resizeGrid(rows, cols);
         }
     }
