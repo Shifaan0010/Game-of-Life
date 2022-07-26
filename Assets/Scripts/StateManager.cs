@@ -1,8 +1,7 @@
 using UnityEngine.EventSystems;
 using UnityEngine;
 
-public class StateManager : MonoBehaviour
-// , IPointerClickHandler, IPointerEnterHandler
+public class StateManager : MonoBehaviour, IPointerClickHandler
 {
     public Color aliveColor = Color.green;
     public Color deadColor = Color.black;
@@ -29,21 +28,14 @@ public class StateManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        rendererComponent = GetComponent<SpriteRenderer>();
+        // rendererComponent = GetComponent<SpriteRenderer>();
     }
 
-    // public void OnPointerClick(PointerEventData data)
-    // {
-    //     toggleState();
-    // }
-
-    // public void OnPointerEnter(PointerEventData data)
-    // {
-    //     if (data.dragging)
-    //     {
-    //         toggleState();
-    //     }
-    // }
+    public void OnPointerClick(PointerEventData data)
+    {
+        Debug.Log($"{data.position.x} {data.position.y}");
+        // toggleState();
+    }
 
     // public void toggleState()
     // {
@@ -53,6 +45,6 @@ public class StateManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        rendererComponent.color = (isAlive) ? aliveColor : deadColor;
+        // rendererComponent.color = (isAlive) ? aliveColor : deadColor;
     }
 }

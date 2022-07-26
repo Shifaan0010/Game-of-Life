@@ -6,8 +6,8 @@ public class GameOfLife : MonoBehaviour
 {
     public ComputeShader computeshader;
 
-    private const int _maxRows = 1000;
-    private const int _maxCols = 1000;
+    public const int maxRows = 1000;
+    public const int maxCols = 1000;
 
     private int[,] _grid;
     public int[,] grid
@@ -18,8 +18,10 @@ public class GameOfLife : MonoBehaviour
         }
     }
 
-    private ComputeBuffer currentState;
-    private ComputeBuffer nextState;
+    private ComputeBuffer _currentState;
+    public ComputeBuffer currentState { get { return _currentState; } }
+
+    private ComputeBuffer _nextState;
 
     string array_to_str(int[] array, int cols, int rows)
     {
@@ -35,11 +37,16 @@ public class GameOfLife : MonoBehaviour
         return s;
     }
 
-    // Start is called before the first frame update
+    void Awake()
+    {
+        _grid = new int[maxRows, maxCols];
+
+        _currentState = new ComputeBuffer(maxRows * maxCols, sizeof(int));
+        _nextState = new ComputeBuffer(maxRows * maxCols, sizeof(int));
+    }
+
     void Start()
     {
-        _grid = new int[_maxRows, _maxCols];
-
         for (int r = 0; r < _grid.GetLength(0); r += 1)
         {
             for (int c = 0; c < _grid.GetLength(1); c += 1)
@@ -48,27 +55,30 @@ public class GameOfLife : MonoBehaviour
             }
         }
 
-        currentState = new ComputeBuffer(_maxRows * _maxCols, sizeof(int));
-        nextState = new ComputeBuffer(_maxRows * _maxCols, sizeof(int));
-
-        currentState.SetData(_grid);
+        _currentState.SetData(_grid);
     }
 
     public void nextGrid()
     {
-        lock (currentState) lock (nextState)
+        lock (_currentState) lock (_nextState)
             {
-                computeshader.SetInt("rows", _maxRows);
-                computeshader.SetInt("cols", _maxCols);
+                computeshader.SetInt("rows", maxRows);
+                computeshader.SetInt("cols", maxCols);
 
-                computeshader.SetBuffer(computeshader.FindKernel("CSMain"), "currentState", currentState);
-                computeshader.SetBuffer(computeshader.FindKernel("CSMain"), "nextState", nextState);
+                computeshader.SetBuffer(computeshader.FindKernel("CSMain"), "currentState", _currentState);
+                computeshader.SetBuffer(computeshader.FindKernel("CSMain"), "nextState", _nextState);
 
-                computeshader.Dispatch(computeshader.FindKernel("CSMain"), _maxCols / 8, _maxRows / 8, 1);
+                computeshader.Dispatch(computeshader.FindKernel("CSMain"), Mathf.CeilToInt(maxCols / 8.0f), Mathf.CeilToInt(maxRows / 8.0f), 1);
 
-                nextState.GetData(_grid);
+                // _nextState.GetData(_grid);
 
-                (currentState, nextState) = (nextState, currentState);
+                (_currentState, _nextState) = (_nextState, _currentState);
             }
+    }
+
+    void OnDestroy()
+    {
+        _currentState.Release();
+        _nextState.Release();
     }
 }

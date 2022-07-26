@@ -64,12 +64,14 @@ public class GridManager : MonoBehaviour
     }
 
     private GameOfLife simulator;
+    private GridRenderer gridRenderer;
 
     // Start is called before the first frame update
     void Start()
     {
-        grid = new List<List<GameObject>>();
+        // grid = new List<List<GameObject>>();
 
+        gridRenderer = GetComponent<GridRenderer>();
         simulator = GetComponent<GameOfLife>();
 
         playSpeed = 10;
@@ -79,7 +81,9 @@ public class GridManager : MonoBehaviour
 
     private void nextGrid()
     {
-        nextState();
+        // nextState();
+        simulator.nextGrid();
+        gridRenderer.setCurrentBuffer();
         Invoke("nextGrid", 1);
     }
 
@@ -207,10 +211,10 @@ public class GridManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (rows != grid.Count || (grid.Count > 0 && cols != grid[0].Count))
-        {
-            // Debug.Log($"Resize {rows} {cols}");
-            resizeGrid(rows, cols);
-        }
+        // if (rows != grid.Count || (grid.Count > 0 && cols != grid[0].Count))
+        // {
+        //     // Debug.Log($"Resize {rows} {cols}");
+        //     resizeGrid(rows, cols);
+        // }
     }
 }
