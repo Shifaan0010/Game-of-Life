@@ -16,6 +16,8 @@ Shader "Custom/GridShader" {
       int rows;
       int cols;
 
+      float gap;
+
       StructuredBuffer<int> currentState;
 
       int get_index(int x, int y) {
@@ -29,7 +31,11 @@ Shader "Custom/GridShader" {
         int r = floor(input.uv[0] * rows);
         int c = floor(input.uv[1] * cols);
 
-        return float4(0.0, currentState[get_index(c, r)], 0.0, 1.0);
+        // if (frac(input.uv[0] * rows) < gap || frac(input.uv[1] * cols) < gap) {
+        //   return float4(1.0, 1.0, 1.0, 1.0);
+        // } else {
+          return float4(0.0, currentState[get_index(c, r)], 0.0, 1.0);
+        // }
       }
       ENDCG
 }}}

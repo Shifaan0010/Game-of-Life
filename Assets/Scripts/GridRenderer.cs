@@ -10,7 +10,19 @@ public class GridRenderer : MonoBehaviour
     public Shader gridShader;
     private Material gridMaterial;
 
-    public void setCurrentBuffer() {
+    public float _gridGap = 0.1f;
+    public float gridGap
+    {
+        get { return _gridGap; }
+        set
+        {
+            _gridGap = value;
+            gridMaterial.SetFloat("gap", gridGap);
+        }
+    }
+
+    public void setCurrentBuffer()
+    {
         gridMaterial.SetBuffer("currentState", simulator.currentState);
     }
 
@@ -20,17 +32,14 @@ public class GridRenderer : MonoBehaviour
         simulator = GetComponent<GameOfLife>();
 
         gridMaterial = new Material(gridShader);
-        
+
         gridMaterial.SetInt("rows", GameOfLife.maxRows);
         gridMaterial.SetInt("cols", GameOfLife.maxCols);
+
+        gridMaterial.SetFloat("gap", gridGap);
 
         setCurrentBuffer();
 
         GetComponent<Renderer>().material = gridMaterial;
-    }
-
-    void Update()
-    {
-        
     }
 }

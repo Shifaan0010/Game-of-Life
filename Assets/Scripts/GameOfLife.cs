@@ -10,13 +10,6 @@ public class GameOfLife : MonoBehaviour
     public const int maxCols = 1000;
 
     private int[,] _grid;
-    public int[,] grid
-    {
-        get
-        {
-            return _grid;
-        }
-    }
 
     private ComputeBuffer _currentState;
     public ComputeBuffer currentState { get { return _currentState; } }
@@ -56,6 +49,16 @@ public class GameOfLife : MonoBehaviour
         }
 
         _currentState.SetData(_grid);
+    }
+
+    public void toggleCell(int r, int c)
+    {
+        lock (_currentState) lock (_nextState)
+            {
+                _currentState.GetData(_grid);
+                _grid[r, c] = 1 - _grid[r, c];
+                _currentState.SetData(_grid);
+            }
     }
 
     public void nextGrid()
