@@ -6,6 +6,7 @@ TagManager:
   tags:
   - PlayButtonImage
   - GridManager
+  - GridCamera
   layers:
   - Default
   - TransparentFX
